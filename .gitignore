@@ -71,6 +71,7 @@ dist/*
 !.gitkeep
 !.htaccess
 !.eslintrc
+.env
 !.env.example
 .now
 
@@ -80,5 +81,5 @@ database.database
 database.db
 diagram.png
 __pycache__/
-migration
 
+migrations

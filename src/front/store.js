@@ -12,7 +12,8 @@ export const initialStore=()=>{
         title: "Do my homework",
         background: null,
       }
-    ]
+    ],
+    token: localStorage.getItem("token") || null,
   }
 }
 
@@ -24,14 +25,15 @@ export default function storeReducer(store, action = {}) {
         message: action.payload
       };
       
-    case 'add_task':
+    case 'add_pet':
 
-      const { id,  color } = action.payload
+      const { id,  name, species, breed, age, wheight } = action.payload
 
       return {
         ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+        pets: store.pets.map((pet) => (pet.id === id ? { ...pet, name: name, species:species, breed:breed, age:age, wheight:wheight } : pet))
       };
+
     default:
       throw Error('Unknown action.');
   }    
