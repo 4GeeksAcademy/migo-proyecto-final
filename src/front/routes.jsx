@@ -13,6 +13,18 @@ import { Register } from "./pages/Register";
 import { RecoveryPassword } from "./pages/RecoveryPassword"
 import { AddPet } from "./pages/AddPet";
 
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
+
+const isAuthenticated = () => {
+  const token = localStorage.getItem("token");
+  return !!token;
+};
+
+const ProtectedRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -23,7 +35,7 @@ export const router = createBrowserRouter(
     // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
 
       // Root Route: All navigation will start from here.
-      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
+      <Route path="/" element={<Layout />} errorElement={<NotFound/>} >
 
         {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
         <Route path= "/" element={<Home />} />
@@ -32,7 +44,16 @@ export const router = createBrowserRouter(
         <Route path="/register" element={<Register/>} />
         <Route path="/recovery-password" element={<RecoveryPassword />} />
         <Route path="/add-pet" element={<AddPet />} /> 
-     
+        <Route path="/login" element={<Login />} />     
+
+        <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
       </Route>
     )
 );
