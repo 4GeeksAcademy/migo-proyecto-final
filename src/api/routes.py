@@ -11,6 +11,11 @@ import os
 from sqlalchemy import select
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta, datetime
+from flask import request
+from api.cloudinary_config import cloudinary
+import cloudinary.uploader
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 
 api = Blueprint('api', __name__)
 
@@ -146,6 +151,7 @@ def add_pet():
     breed = data.get('breed')
     age = data.get('age')
     wheight = data.get('wheight')
+    image = data.get('image')
 
     if not name:
         return jsonify({"message": "Necesita al menos el nombre de la mascota"}), 400
@@ -165,7 +171,8 @@ def add_pet():
             age=int(age) if age else None,
             wheight=float(wheight) if wheight else None,
             owner_id=owner_id,
-            )
+            image=image  
+)
         
 
         db.session.add(pet)
@@ -175,6 +182,7 @@ def add_pet():
 
     except Exception as error:
         db.session.rollback()
+        print("Error al registrar mascota:", error)
         return jsonify({"error": str(error)}), 500
 
 
@@ -229,3 +237,23 @@ def get_notes():
     
     notes = db.session.execute(select(ClinHistory).where(ClinHistory.pet_id == pet.id)).scalars().all()
     return jsonify([note.serialize() for note in notes]), 200
+
+
+@api.route('/upload', methods=['POST'])
+@jwt_required()
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"msg": "No se proporcionó ninguna imagen"}), 400
+
+    image = request.files['image']
+    if image.filename == '':
+        return jsonify({"msg": "Nombre de archivo vacío"}), 400
+
+    try:
+        result = cloudinary.uploader.upload(image)
+        return jsonify({
+            "image_url": result.get("secure_url"),
+            "public_id": result.get("public_id")
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al subir imagen: {str(e)}"}), 500
