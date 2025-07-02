@@ -1,22 +1,24 @@
 import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { PetCard } from "../components/PetCard";
-import {getAllPets} from "../services/api";
+import { getAllPets } from "../services/api";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
+    const { store, dispatch } = useGlobalReducer();
 
-    const {store, dispatch} = useGlobalReducer();
+    async function fetchPets() {
+        const data = await getAllPets();
 
-    async function fetchPets(){
-        const data = await getAllPets()
-        if(data) {
-            dispatch({type: 'SET_PETS', payload: data})
+        console.log("Mascotas desde backend:", data);
+
+        if (data) {
+            dispatch({ type: 'SET_PETS', payload: data });
         }
     }
 
     useEffect(() => {
-        fetchPets()
+        fetchPets();
     }, []);
 
     return (
@@ -34,9 +36,10 @@ export const Home = () => {
                 )}
             </div>
             <div className="d-flex justify-content-center my-3">
-                <Link to={'/add-pet'} className="btn btn-dark rounded-circle"><i className="fa-solid fa-plus fa-xl"></i></Link>
+                <Link to={'/add-pet'} className="btn btn-dark rounded-circle">
+                    <i className="fa-solid fa-plus fa-xl"></i>
+                </Link>
             </div>
         </div>
     );
-
 };

@@ -5,6 +5,8 @@ from email.mime.multipart import MIMEMultipart
 import smtplib
 import ssl
 from werkzeug.security import generate_password_hash, check_password_hash
+import cloudinary
+import cloudinary.uploader
 
 class APIException(Exception):
     status_code = 400
@@ -88,3 +90,10 @@ def send_email(subject, to, body):
     except Exception as error:
         print(str(error))
         return False
+    
+
+cloudinary.config(
+  cloud_name = 'dhhbxwsi2',
+  api_key = '677271553569126',
+  api_secret = '73n9eP5u5qZdHjumd_mm5uzhV8g'
+)

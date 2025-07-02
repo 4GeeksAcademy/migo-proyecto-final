@@ -47,6 +47,7 @@ class Pet(db.Model):
     breed: Mapped[str] = mapped_column(String(80), nullable=True)
     age: Mapped[int] = mapped_column(Integer, nullable=True)  
     wheight: Mapped[float] = mapped_column(Float(2), nullable=True) 
+    image: Mapped[str] = mapped_column(String(300), nullable=True)  # 👉 Se agregó este campo
     owner_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False) 
 
     owner: Mapped["User"] = relationship("User", back_populates="pets")
@@ -60,6 +61,7 @@ class Pet(db.Model):
             'breed': self.breed,
             'age': self.age,
             'wheight': self.wheight,
+            'image': self.image,  
             'owner_id': self.owner_id
         }
 
@@ -68,7 +70,7 @@ class ClinHistory(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)  
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow) 
-    event_date: Mapped[datetime] = mapped_column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())  # Date de l'événement
+    event_date: Mapped[datetime] = mapped_column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())  
     event_name: Mapped[str] = mapped_column(String(80), nullable=False)
     place: Mapped[str] = mapped_column(String(80), nullable=True) 
     note: Mapped[str] = mapped_column(Text, nullable=True) 
