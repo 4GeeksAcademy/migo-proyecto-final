@@ -1,127 +1,112 @@
-import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
-export const EditPet = () => {
-    const { id } = useParams()
-    const [pet, setPet] = useState({
-        name: "",
-        species: "",
-        breed: "",
-        age: "",
-        wheight: ""
-    })
+export function EditPet() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [pet, setPet] = useState(null);
 
-    const navigate = useNavigate()
-    const token = localStorage.getItem("token")
-    const url = import.meta.env.VITE_BACKEND_URL
+    // Estados separados por campo
+    const [name, setName] = useState("");
+    const [species, setSpecies] = useState("");
+    const [breed, setBreed] = useState("");
+    const [age, setAge] = useState("");
+    const [wheight, setWheight] = useState("");
 
     useEffect(() => {
-        fetch(`${url}/api/pet/${id}`, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
+        const fetchPet = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pet/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    setPet(data);
+                    setName(data.name || "");
+                    setSpecies(data.species || "");
+                    setBreed(data.breed || "");
+                    setAge(data.age || "");
+                    setWheight(data.wheight || "");
+                } else {
+                    alert("No se pudo cargar la mascota");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Ocurrió un error al cargar la mascota");
             }
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Error al obtener los datos de la mascota")
-            return res.json()
-        })
-        .then(data => setPet(data))
-        .catch(error => {
-            console.error(error)
-            alert("No se pudo cargar la mascota")
-        })
-    }, [id])
+        };
 
-    const handleChange = ({ target }) => {
-        setPet({ ...pet, [target.name]: target.value })
-    }
+        fetchPet();
+    }, [id]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault()
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const updatedPet = {
+            name,
+            species,
+            breed,
+            age: parseInt(age),
+            wheight: parseFloat(wheight),
+        };
 
         try {
-            const response = await fetch(`${url}/api/pet/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pet/${id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
-                body: JSON.stringify(pet)
-            })
+                body: JSON.stringify(updatedPet),
+            });
 
-            if (response.ok) {
-                alert("Mascota actualizada con éxito")
-                navigate("/dashboard")
-            } else {
-                alert("Error al actualizar la mascota")
+            const responseBody = await response.text();  // Para mostrar aunque no sea JSON
+
+            if (!response.ok) {
+                console.error("Error completo:", responseBody);
+                alert("Error: No se pudo actualizar la mascota\n" + responseBody);
+                return;
             }
+
+            alert("Mascota actualizada correctamente");
+            navigate("/home");
         } catch (error) {
-            console.error(error)
-            alert("Hubo un problema con la solicitud")
+            console.error("Error de red:", error);
+            alert("Error de red al actualizar la mascota");
         }
-    }
+    };
+
 
     return (
-        <div className="container">
-            <h2 className="my-4">Editar Mascota</h2>
-            <form className="border p-4" onSubmit={handleSubmit}>
-                <div className="form-group mb-3">
+        <div className="container mt-5">
+            <h2>Editar Mascota</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="mb-3">
                     <label>Nombre</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        name="name"
-                        value={pet.name}
-                        onChange={handleChange}
-                        required
-                    />
+                    <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} />
                 </div>
-                <div className="form-group mb-3">
+                <div className="mb-3">
                     <label>Especie</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        name="species"
-                        value={pet.species}
-                        onChange={handleChange}
-                    />
+                    <input type="text" className="form-control" value={species} onChange={e => setSpecies(e.target.value)} />
                 </div>
-                <div className="form-group mb-3">
+                <div className="mb-3">
                     <label>Raza</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        name="breed"
-                        value={pet.breed}
-                        onChange={handleChange}
-                    />
+                    <input type="text" className="form-control" value={breed} onChange={e => setBreed(e.target.value)} />
                 </div>
-                <div className="form-group mb-3">
+                <div className="mb-3">
                     <label>Edad</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        name="age"
-                        value={pet.age || ""}
-                        onChange={handleChange}
-                    />
+                    <input type="number" className="form-control" value={age} onChange={e => setAge(e.target.value)} />
                 </div>
-                <div className="form-group mb-3">
+                <div className="mb-3">
                     <label>Peso (kg)</label>
-                    <input
-                        type="number"
-                        className="form-control"
-                        name="wheight"
-                        step="0.1"
-                        value={pet.wheight || ""}
-                        onChange={handleChange}
-                    />
+                    <input type="number" step="0.1" className="form-control" value={wheight} onChange={e => setWheight(e.target.value)} />
                 </div>
-                <button type="submit" className="btn btn-primary w-100">
-                    Guardar Cambios
-                </button>
+                <button type="submit" className="btn btn-primary w-100">Guardar Cambios</button>
             </form>
         </div>
-    )
+    );
 }

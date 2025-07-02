@@ -1,9 +1,9 @@
 // Import necessary components and functions from react-router-dom.
 import {
-    createBrowserRouter,
-    createRoutesFromElements,
-    Route,
-    Navigate,
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  Navigate,
 } from "react-router-dom";
 
 import { Layout } from "./pages/Layout";
@@ -30,29 +30,24 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export const router = createBrowserRouter(
-    createRoutesFromElements(
-    // CreateRoutesFromElements function allows you to build route elements declaratively.
-    // Create your routes here, if you want to keep the Navbar and Footer in all views, add your new routes inside the containing Route.
-    // Root, on the contrary, create a sister Route, if you have doubts, try it!
-    // Note: keep in mind that errorElement will be the default page when you don't get a route, customize that page to make your project more attractive.
-    // Note: The child paths of the Layout element replace the Outlet component with the elements contained in the "element" attribute of these child paths.
+  createRoutesFromElements(
+    <>
+      {/* Rutas públicas que NO usan Layout ni Navbar */}
+      <Route path="/" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/recovery-password" element={<RecoveryPassword />} />
 
-      // Root Route: All navigation will start from here.
-      <Route path="/" element={<Layout />} errorElement={<NotFound/>} >
-
-        {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-
-        <Route path="/single/:theId" element={ <Single />} />  {/* Dynamic route for single items */}
-        <Route path="/demo" element={<Demo />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/" element={<Login />} />
-        <Route path="/recovery-password" element={<RecoveryPassword />} />
-        <Route path= "/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/add-pet" element={<ProtectedRoute><AddPet /></ProtectedRoute>} /> 
-        <Route path= "/pet-detail/:theId" element={<ProtectedRoute><PetDetail/></ProtectedRoute>}/>
-        <Route path="/edit-pet/:id" element={<EditPet />} />
-        <Route path="/add-note" element={<ProtectedRoute><AddNote /></ProtectedRoute>} /> 
-        <Route path="/edit-note/:id" element={<ProtectedRoute><EditNote /></ProtectedRoute>} /> 
+      {/* Rutas con Layout */}
+      <Route path="/" element={<Layout />} errorElement={<NotFound />}>
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/single/:theId" element={<ProtectedRoute><Single /></ProtectedRoute>} />
+        <Route path="/demo" element={<ProtectedRoute><Demo /></ProtectedRoute>} />
+        <Route path="/add-pet" element={<ProtectedRoute><AddPet /></ProtectedRoute>} />
+        <Route path="/pet-detail/:theId" element={<ProtectedRoute><PetDetail /></ProtectedRoute>} />
+        <Route path="/edit-pet/:id" element={<ProtectedRoute><EditPet /></ProtectedRoute>} />
+        <Route path="/add-note" element={<ProtectedRoute><AddNote /></ProtectedRoute>} />
+        <Route path="/edit-note/:id" element={<ProtectedRoute><EditNote /></ProtectedRoute>} />
       </Route>
-    )
+    </>
+  )
 );

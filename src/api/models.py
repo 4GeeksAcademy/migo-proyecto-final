@@ -81,10 +81,11 @@ class ClinHistory(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'created_at': self.created_at,
-            'event_date': self.event_date,
+            'created_at': self.created_at.isoformat(),
+            'event_date': self.event_date.isoformat(),
             'event_name': self.event_name,
             'place': self.place,
             'note': self.note,
-            'pet_id': self.pet_id
+            'pet_id': self.pet_id,
+            'pet_name': self.pet.name
         }

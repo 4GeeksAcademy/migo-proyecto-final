@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
 
 const initialStateNote = {
   event_date: getTodayDate(),
@@ -8,7 +8,6 @@ const initialStateNote = {
   note: "",
   pet_id: "",
 };
-
 
 function getTodayDate() {
   const today = new Date();
@@ -23,16 +22,15 @@ export const AddNote = () => {
   const [pets, setPets] = useState([]);
   const navigate = useNavigate();
 
-
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    navigate("/");
-  }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    }
 
     async function fetchPets() {
-        const url = import.meta.env.VITE_BACKEND_URL;
-        const token = localStorage.getItem("token");
+      const url = import.meta.env.VITE_BACKEND_URL;
+      const token = localStorage.getItem("token");
 
       try {
         const response = await fetch(`${url}/pets`, {
@@ -56,26 +54,39 @@ export const AddNote = () => {
     fetchPets();
   }, [navigate]);
 
-function handleChange({ target }) {
-  const { name, value, type } = target;
+  useEffect(() => {
+    if (pets.length === 1) {
+      setNote((prev) => ({
+        ...prev,
+        pet_id: pets[0].id,
+      }));
+    }
+  }, [pets]);
 
-  setNote((prev) => ({
-    ...prev,
-    [name]: type === "number" && value !== "" ? Number(value) : value,
-  }));
-}
+  function handleChange({ target }) {
+    const { name, value, type } = target;
 
-const isValidDateFormat = (dateStr) => {
-      const regex = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])\/\d{4}$/;
-      return regex.test(dateStr);
-      };
+    setNote((prev) => ({
+      ...prev,
+      [name]: type === "number" && value !== "" ? Number(value) : value,
+    }));
+  }
 
+  const convertDateToISO = (dateStr) => {
+    const [day, month, year] = dateStr.split('/');
+    return `${year}-${month}-${day}`;
+  };
 
-async function handleSubmit(event) {
+  const isValidDateFormat = (dateStr) => {
+    const regex = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])\/\d{4}$/;
+    return regex.test(dateStr);
+  };
+
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const url = import.meta.env.VITE_BACKEND_URL;
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token");
 
     if (!isValidDateFormat(note.event_date)) {
       alert("El formato de la fecha debe ser dd/mm/aaaa");
@@ -83,7 +94,6 @@ async function handleSubmit(event) {
     }
 
     try {
-
       const response = await fetch(`${url}/note`, {
         method: "POST",
         headers: {
@@ -91,38 +101,37 @@ async function handleSubmit(event) {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-        ...note,
-        event_date: note.event_date,
-      }),
-    });
+          ...note,
+          event_date: convertDateToISO(note.event_date), 
+          pet_id: note.pet_id
+        }),
+      });
 
-    if (response.status === 201) {
-      setNote(initialStateNote);
-      setTimeout(() => {
-        navigate("/home");
-      }, 1000);
+      if (response.status === 201) {
+        setNote(initialStateNote); 
+        setTimeout(() => {
+          navigate("/home");
+        }, 1000);
     
-    } else {
-      alert("Error al registrar la nota");
+      } else {
+        alert("Error al registrar la nota");
+      }
+    } catch (error) {
+      alert("Occurió un error al registrar la nota.");
     }
-  } catch (error) {
-    alert("Occurio un error al registrar la nota.");
   }
-}
 
   function handleResize(event) {
     const textarea = event.target;
     textarea.style.height = "auto"; 
-    // textarea.style.height = `${textarea.scrollHeight}px`; 
   }
 
-
-return (
+  return (
     <div className="container">
       <div className="row justify-content-center">
         <div className="col-12 col-ms-6">
           <form className="border rounded m-2 p-4" onSubmit={handleSubmit}>
-           <h3 className="text-center mt-3">Añadir una nota</h3><p className="text-center">para</p>
+            <h3 className="text-center mt-3">Añadir una nota</h3><p className="text-center">para</p>
             {pets.length === 1 ? (
               <div className="mb-3">
                 <label className="form-label">Mascota</label>
@@ -188,17 +197,17 @@ return (
             </div>
 
             <div className="form-floating mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  id="event_dateInput"
-                  name="event_date"
-                  placeholder="dd/mm/aaaa"
-                  onChange={handleChange}
-                  value={note.event_date}
-                />
-                <label htmlFor="event_dateInput">Fecha (dd/mm/aaaa)</label>
-              </div>
+              <input
+                type="text"
+                className="form-control"
+                id="event_dateInput"
+                name="event_date"
+                placeholder="dd/mm/aaaa"
+                onChange={handleChange}
+                value={note.event_date}
+              />
+              <label htmlFor="event_dateInput">Fecha</label>
+            </div>
 
             <div className="form-floating mb-3">
               <textarea
@@ -218,11 +227,10 @@ return (
             <button className="btn btn-outline-primary w-100">Añadir</button>
           </form>
           <div className="d-flex justify-content-center my-3 justify-content-evenly">
-            <Link to="/">Regresar</Link>
+            <Link to="/home">Regresar</Link>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

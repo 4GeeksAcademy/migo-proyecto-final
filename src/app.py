@@ -19,7 +19,8 @@ import cloudinary.uploader
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "https://humble-guide-wr5xpppj5vqqf56qq-3000.app.github.dev"}})
+
 
 # Setup JWT
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")

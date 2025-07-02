@@ -1,15 +1,18 @@
-import { Outlet } from "react-router-dom/dist"
-import ScrollToTop from "../components/ScrollToTop"
-import { Navbar } from "../components/Navbar"
-import { Footer } from "../components/Footer"
+import { Outlet } from "react-router-dom";
+import ScrollToTop from "../components/ScrollToTop";
+import { Navbar } from "../components/Navbar";
+import { Footer } from "../components/Footer";
 
-// Base component that maintains the navbar and footer throughout the page and the scroll to top functionality.
 export const Layout = () => {
+    const token = localStorage.getItem("token");
+
     return (
         <ScrollToTop>
-            <Navbar />
+            {token && <Navbar />}
+            <div style={{ paddingTop: token ? "60px" : "0" }}>
                 <Outlet />
+            </div>
             {/* <Footer /> */}
         </ScrollToTop>
-    )
-}
+    );
+};
