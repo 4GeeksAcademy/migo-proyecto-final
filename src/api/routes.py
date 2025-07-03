@@ -9,9 +9,10 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from datetime import timedelta, datetime
 from clarifai.client.model import Model
 import asyncio
+from werkzeug.security import generate_password_hash
 
 api = Blueprint('api', __name__)
-CORS(api)
+CORS(api, supports_credentials=True)
 
 expires_in_minutes = 10
 expires_delta = timedelta(minutes=expires_in_minutes)
@@ -90,12 +91,12 @@ def reset_password():
         return jsonify("user not found"), 404
 
     access_token = create_access_token(
-        identity=user.id, expires_delta=expires_delta)
+        identity=user.email, expires_delta=expires_delta)
 
     message = f"""
         <p>Hola {user.name},</p>
 
-        <p>Con este link, podrás <a href="{os.getenv("FRONTEND_URL")}/password-update?token={access_token}">recuperar tu contraseña</a>.</p>
+        <p>Con este link, podrás <a href="{os.getenv("FRONTEND_URL")}password-update?token={access_token}">recuperar tu contraseña</a>.</p>
 
         <p>Un saludo</p>
 
@@ -356,3 +357,36 @@ def ask_vet():
         return jsonify({"response": reply})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+@api.route("/update-password", methods=["PUT"])
+@jwt_required()
+def update_password():
+    try:
+        user_token_email = get_jwt_identity()
+        
+        new_password = request.json.get("password")
+        
+        if not new_password:
+            return jsonify({"error": "Necesita una contraseña"}), 400
+
+        user = User.query.filter_by(email=user_token_email).first()
+
+        if user is None:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        salt = b64encode(os.urandom(32)).decode("utf-8")
+        hashed_password = generate_password_hash(new_password + salt)
+
+        user.salt = salt
+        user.password = hashed_password
+
+        try:
+            db.session.commit()
+            return jsonify({"message": "Contraseña actualizada exitosamente"}), 200
+        except Exception as error:
+            db.session.rollback()
+            return jsonify({"error": "Error de servidor"}), 500
+    except Exception as e:
+        return jsonify({"error": "Error al actualizar la contraseña"}), 500

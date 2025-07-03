@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import { AddNote } from "./pages/AddNote";
 import { EditNote } from "./pages/EditNote"
 import { Chatbot } from "./pages/Chatbot";
+import { PasswordUpdate } from "./pages/PasswordUpdate"
 
 const isAuthenticated = () => {
   const token = localStorage.getItem("token");
@@ -38,6 +39,7 @@ export const router = createBrowserRouter(
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/recovery-password" element={<RecoveryPassword />} />
+        <Route path="/password-update" element={<PasswordUpdate />} />
 
         {/* Rutas con Layout */}
       <Route path="/" element={<Layout />} errorElement={<NotFound />}>

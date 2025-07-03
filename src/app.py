@@ -19,7 +19,7 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://humble-guide-wr5xpppj5vqqf56qq-3000.app.github.dev"}})
+CORS(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
 
 
 # Setup the Flask-JWT-Extended extension
