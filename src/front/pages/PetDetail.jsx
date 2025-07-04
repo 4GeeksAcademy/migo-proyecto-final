@@ -1,31 +1,30 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { getPetById, deletePetById } from "../services/api";
 import { useState, useEffect } from "react";
 import { PetMedicalRecord } from "../components/PetMedicalRecord";
-import { Link } from "react-router-dom";
 
 export function PetDetail() {
-    const { store } = useGlobalReducer();
     const { theId } = useParams();
     const navigate = useNavigate();
     const [pet, setPet] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        async function getPet() {
-            const foundPet = store.pets.find(item => item.id === parseInt(theId));
-            if (foundPet) {
-                setPet(foundPet);
+        async function fetchPet() {
+            setIsLoading(true);
+            const petFromApi = await getPetById(theId);
+            if (petFromApi) {
+                setPet(petFromApi);
             } else {
-                const petFromApi = await getPetById(theId);
-                if (petFromApi) {
-                    setPet(petFromApi);
-                }
+                setPet(null);
             }
+            setIsLoading(false);
         }
-        getPet();
-    }, [theId, store.pets]);
+
+        fetchPet();
+    }, [theId]);
 
     const handleDelete = async () => {
         try {
@@ -36,6 +35,8 @@ export function PetDetail() {
             alert(`Error al eliminar la mascota: ${error.message}`);
         }
     };
+
+    if (isLoading) return null;
 
     if (!pet) return <p>Mascota no encontrada</p>;
 
@@ -61,9 +62,14 @@ export function PetDetail() {
             <div className="row">
                 <div className="col-md-4 mb-3">
                     <img
-                        src="https://media.4-paws.org/d/2/5/f/d25ff020556e4b5eae747c55576f3b50886c0b90/cut%20cat%20serhio%2002-1813x1811-720x719.jpg"
+                        src={
+                            pet.image?.trim()
+                                ? pet.image
+                                : "https://img.freepik.com/vector-gratis/concepto-mascotas-diferentes_52683-37549.jpg"
+                        }
                         alt={pet.name}
-                        className="img-fluid rounded"
+                        className="img-fluid rounded shadow object-fit-cover"
+                        style={{ width: "100%", aspectRatio: "1 / 1" }}
                     />
                 </div>
                 <div className="col-md-8">

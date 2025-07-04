@@ -19,12 +19,11 @@ async function getAllPets() {
     }
 };
 
-
 async function getPetById(id) {
     const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pets/${id}`, {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pet/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -56,7 +55,7 @@ async function getMedicalRecords(pet_id) {
         return data;
 
     } catch (error) {
-        console.error("Error al obtener registros medicos:", error)
+        console.error("Error al obtener registros médicos:", error);
         return [];
     }
 }
@@ -89,7 +88,7 @@ async function deletePetById(petId) {
         const response = await fetch(`${url}/pet/${petId}`, {
             method: "DELETE",
             headers: {
-                "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 
@@ -104,11 +103,10 @@ async function deletePetById(petId) {
     }
 }
 
-
 export {
     getAllPets,
     getPetById,
     getMedicalRecords,
     deleteMedicalRecord,
     deletePetById
-}
+};

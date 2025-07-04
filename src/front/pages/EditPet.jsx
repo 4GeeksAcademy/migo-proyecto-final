@@ -6,17 +6,25 @@ export function EditPet() {
     const navigate = useNavigate();
     const [pet, setPet] = useState(null);
 
-    // Estados separados por campo
     const [name, setName] = useState("");
     const [species, setSpecies] = useState("");
     const [breed, setBreed] = useState("");
     const [age, setAge] = useState("");
     const [wheight, setWheight] = useState("");
+    const [imageFile, setImageFile] = useState(null);
+    const [currentImage, setCurrentImage] = useState("");
+
+    const DEFAULT_IMAGE = "https://img.freepik.com/vector-gratis/concepto-mascotas-diferentes_52683-37549.jpg";
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
         const fetchPet = async () => {
             try {
-                const token = localStorage.getItem("token");
                 const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pet/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -31,6 +39,7 @@ export function EditPet() {
                     setBreed(data.breed || "");
                     setAge(data.age || "");
                     setWheight(data.wheight || "");
+                    setCurrentImage(data.image || "");
                 } else {
                     alert("No se pudo cargar la mascota");
                 }
@@ -46,12 +55,40 @@ export function EditPet() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const token = localStorage.getItem("token");
+        let imageUrl = currentImage;
+
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append("file", imageFile);
+            formData.append("upload_preset", "ml_default");
+
+            try {
+                const res = await fetch("https://api.cloudinary.com/v1_1/dhhbxwsi2/image/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                imageUrl = data.secure_url;
+            } catch (err) {
+                alert("Error al subir imagen");
+                console.error(err);
+                return;
+            }
+        }
+
+ 
+        if (!imageUrl || imageUrl.trim() === "") {
+            imageUrl = DEFAULT_IMAGE;
+        }
+
         const updatedPet = {
             name,
             species,
             breed,
             age: parseInt(age),
             wheight: parseFloat(wheight),
+            image: imageUrl
         };
 
         try {
@@ -59,27 +96,30 @@ export function EditPet() {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(updatedPet),
             });
 
-            const responseBody = await response.text();  // Para mostrar aunque no sea JSON
-
             if (!response.ok) {
+                const responseBody = await response.text();
                 console.error("Error completo:", responseBody);
                 alert("Error: No se pudo actualizar la mascota\n" + responseBody);
                 return;
             }
 
             alert("Mascota actualizada correctamente");
-            navigate("/home");
+            navigate(`/pet-detail/${id}`);
         } catch (error) {
             console.error("Error de red:", error);
             alert("Error de red al actualizar la mascota");
         }
     };
 
+    const handleDeleteImage = () => {
+        setCurrentImage("");
+        setImageFile(null);
+    };
 
     return (
         <div className="container mt-5">
@@ -105,6 +145,24 @@ export function EditPet() {
                     <label>Peso (kg)</label>
                     <input type="number" step="0.1" className="form-control" value={wheight} onChange={e => setWheight(e.target.value)} />
                 </div>
+
+                {currentImage && (
+                    <div className="mb-3">
+                        <label>Foto actual</label>
+                        <div>
+                            <img src={currentImage} alt="Foto actual" className="img-fluid rounded" style={{ maxWidth: "150px" }} />
+                        </div>
+                        <button type="button" className="btn btn-outline-danger mt-2" onClick={handleDeleteImage}>
+                            Eliminar foto actual
+                        </button>
+                    </div>
+                )}
+
+                <div className="mb-3">
+                    <label>Cambiar foto actual (opcional)</label>
+                    <input type="file" className="form-control" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} />
+                </div>
+
                 <button type="submit" className="btn btn-primary w-100">Guardar Cambios</button>
             </form>
         </div>

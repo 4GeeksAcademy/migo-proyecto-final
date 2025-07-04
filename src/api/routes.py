@@ -133,6 +133,7 @@ def add_pet():
     breed = data.get('breed')
     age = data.get('age')
     wheight = data.get('wheight')
+    image = data.get('image', "")
 
     if not name:
         return jsonify({"message": "Necesita al menos el nombre de la mascota"}), 400
@@ -140,10 +141,15 @@ def add_pet():
     if Pet.query.filter_by(name=name, owner_id=owner_id).first():
         return jsonify({"message": "Ya registraste una mascota con este nombre"}), 409
 
-    pet = Pet(name=name, species=species, breed=breed,
-              age=int(age) if age else None,
-              wheight=float(wheight) if wheight else None,
-              owner_id=owner_id)
+    pet = Pet(
+        name=name,
+        species=species,
+        breed=breed,
+        age=int(age) if age else None,
+        wheight=float(wheight) if wheight else None,
+        image=image,
+        owner_id=owner_id
+    )
 
     db.session.add(pet)
     try:
@@ -152,6 +158,27 @@ def add_pet():
     except Exception as error:
         db.session.rollback()
         return jsonify({"error": str(error)}), 500
+    
+
+@api.route('/upload', methods=['POST'])
+@jwt_required()
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"msg": "No se proporcionó ninguna imagen"}), 400
+
+    image = request.files['image']
+    if image.filename == '':
+        return jsonify({"msg": "Nombre de archivo vacío"}), 400
+
+    try:
+        result = cloudinary.uploader.upload(image)
+        return jsonify({
+            "image_url": result.get("secure_url"),
+            "public_id": result.get("public_id")
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al subir imagen: {str(e)}"}), 500
+
 
 
 @api.route('/pet/<int:pet_id>', methods=['GET'])
@@ -183,12 +210,17 @@ def update_pet(pet_id):
     pet.age = data.get("age", pet.age)
     pet.wheight = data.get("wheight", pet.wheight)
 
+    
+    if "image" in data:
+        pet.image = data["image"]
+
     try:
         db.session.commit()
         return jsonify({"message": "Mascota actualizada correctamente"}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 
 @api.route('/pet/<int:pet_id>', methods=['DELETE'])

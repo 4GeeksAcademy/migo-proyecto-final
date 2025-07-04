@@ -24,9 +24,9 @@ export const Navbar = () => {
                     {/* <Link to="/profile" className="text-secondary text-decoration-none"> */}
                     <i className="fas fa-user fs-5 text-secondary"></i>
                     {/* </Link> */}
-                    {/* <Link to="/chat" className="text-secondary text-decoration-none"> */}
+                    <Link to="/consejos" className="text-secondary text-decoration-none">
                     <i className="fas fa-comments fs-5 text-secondary"></i>
-                    {/* </Link> */}
+                    </Link>
                     <button className="text-secondary text-decoration-none border-0" onClick={handleLogout}>
                         <i className="fas fa-sign-out-alt fs-5"></i>
                     </button>

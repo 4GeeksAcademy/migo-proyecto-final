@@ -24,7 +24,7 @@ class User(db.Model):
     city: Mapped[str] = mapped_column(String(100), nullable=True)
     avatar: Mapped[str] = mapped_column(String(180), nullable=True)
     role: Mapped[RoleEnum] = mapped_column(SQLAEnum(RoleEnum), nullable=False, default=RoleEnum.general)
-    
+
     pets: Mapped[list["Pet"]] = relationship("Pet", back_populates="owner")
 
     def serialize(self):
@@ -41,13 +41,14 @@ class User(db.Model):
 class Pet(db.Model):
     __tablename__ = 'pet'
 
-    id: Mapped[int] = mapped_column(primary_key=True)  
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(80), nullable=False)
-    species: Mapped[str] = mapped_column(String(80), nullable=True)   
+    species: Mapped[str] = mapped_column(String(80), nullable=True)
     breed: Mapped[str] = mapped_column(String(80), nullable=True)
-    age: Mapped[int] = mapped_column(Integer, nullable=True)  
-    wheight: Mapped[float] = mapped_column(Float(2), nullable=True) 
-    owner_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False) 
+    age: Mapped[int] = mapped_column(Integer, nullable=True)
+    wheight: Mapped[float] = mapped_column(Float(2), nullable=True)
+    image: Mapped[str] = mapped_column(String(255), nullable=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
 
     owner: Mapped["User"] = relationship("User", back_populates="pets")
     clin_historys: Mapped[list["ClinHistory"]] = relationship("ClinHistory", back_populates="pet")
@@ -60,18 +61,19 @@ class Pet(db.Model):
             'breed': self.breed,
             'age': self.age,
             'wheight': self.wheight,
+            'image': self.image,
             'owner_id': self.owner_id
         }
 
 class ClinHistory(db.Model):
     __tablename__ = 'clin_history'
 
-    id: Mapped[int] = mapped_column(primary_key=True)  
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow) 
-    event_date: Mapped[datetime] = mapped_column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())  # Date de l'événement
+    id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    event_date: Mapped[datetime] = mapped_column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
     event_name: Mapped[str] = mapped_column(String(80), nullable=False)
-    place: Mapped[str] = mapped_column(String(80), nullable=True) 
-    note: Mapped[str] = mapped_column(Text, nullable=True) 
+    place: Mapped[str] = mapped_column(String(80), nullable=True)
+    note: Mapped[str] = mapped_column(Text, nullable=True)
     pet_id: Mapped[int] = mapped_column(ForeignKey('pet.id'), nullable=False)
 
     pet: Mapped["Pet"] = relationship("Pet", back_populates="clin_historys")
