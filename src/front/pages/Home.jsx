@@ -1,52 +1,47 @@
-import React, { useEffect } from "react"
-import rigoImageUrl from "../assets/img/rigo-baby.jpg";
+import { Link, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { PetCard } from "../components/PetCard";
+import { getAllPets } from "../services/api";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 
 export const Home = () => {
+    const { store, dispatch } = useGlobalReducer();
+    const location = useLocation();
 
-	const { store, dispatch } = useGlobalReducer()
+    async function fetchPets() {
+        const data = await getAllPets();
+        if (data) {
+            dispatch({ type: 'SET_PETS', payload: data });
+        }
+    }
 
-	const loadMessage = async () => {
-		try {
-			const backendUrl = import.meta.env.VITE_BACKEND_URL
+    useEffect(() => {
+        fetchPets();
+    }, [location.key]);
 
-			if (!backendUrl) throw new Error("VITE_BACKEND_URL is not defined in .env file")
+    return (
+        <div className="container justify-content-center padding-top">
+            <div className="my-4">
+                {store.pets.length > 0 ? (
+                    <div className="d-flex flex-wrap justify-content-center gap-4">
+                        {store.pets.map(pet => (
+                            <div key={pet.id} className="pet-card-wrapper">
+                                <PetCard pet={pet} />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "30vh" }}>
+                        <p className="text-center text-muted fs-5">No tienes mascotas registradas.</p>
+                    </div>
+                )}
 
-			const response = await fetch(backendUrl + "/api/hello")
-			const data = await response.json()
-
-			if (response.ok) dispatch({ type: "set_hello", payload: data.message })
-
-			return data
-
-		} catch (error) {
-			if (error.message) throw new Error(
-				`Could not fetch the message from the backend.
-				Please check if the backend is running and the backend port is public.`
-			);
-		}
-
-	}
-
-	useEffect(() => {
-		loadMessage()
-	}, [])
-
-	return (
-		<div className="text-center mt-5">
-			<h1 className="display-4">Hello Rigo!!</h1>
-			<p className="lead">
-				<img src={rigoImageUrl} className="img-fluid rounded-circle mb-3" alt="Rigo Baby" />
-			</p>
-			<div className="alert alert-info">
-				{store.message ? (
-					<span>{store.message}</span>
-				) : (
-					<span className="text-danger">
-						Loading message from the backend (make sure your python 🐍 backend is running)...
-					</span>
-				)}
-			</div>
-		</div>
-	);
-}; 
+                <div className="d-flex justify-content-center my-5">
+                    <Link to={'/add-pet'} className="btn btn-secondary rounded-circle">
+                        <i className="fa-solid fa-plus"></i>
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+};
